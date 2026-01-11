@@ -1,55 +1,64 @@
-"""OpenRouter API client for making LLM requests."""
+"""Ollama API client for local LLM requests."""
 
 import httpx
 from typing import List, Dict, Any, Optional
-from .config import OPENROUTER_API_KEY, OPENROUTER_API_URL
+from .config import OLLAMA_BASE_URL
 
 
 async def query_model(
     model: str,
     messages: List[Dict[str, str]],
-    timeout: float = 120.0
+    timeout: float = 1000.0  # Local models can be slow, increased timeout
 ) -> Optional[Dict[str, Any]]:
     """
-    Query a single model via OpenRouter API.
+    Query a single local model via Ollama API.
 
     Args:
-        model: OpenRouter model identifier (e.g., "openai/gpt-4o")
+        model: Ollama model identifier (e.g., "llama3", "mistral")
         messages: List of message dicts with 'role' and 'content'
         timeout: Request timeout in seconds
 
     Returns:
         Response dict with 'content' and optional 'reasoning_details', or None if failed
     """
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-    }
-
+    
+    # Ollama API endpoint for chat
+    url = f"{OLLAMA_BASE_URL}/api/chat"
+    
     payload = {
         "model": model,
         "messages": messages,
+        "stream": False, # We want the full response at once, not streamed
+        "options": {
+            "temperature": 0.7, # Standard creative temperature
+            "num_ctx": 4096    # Context window size
+        }
     }
 
     try:
+        # Note: No API Key header needed for local Ollama
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
-                OPENROUTER_API_URL,
-                headers=headers,
+                url,
                 json=payload
             )
             response.raise_for_status()
 
             data = response.json()
-            message = data['choices'][0]['message']
+            
+            # Ollama returns the message in data['message']
+            message_content = data.get('message', {}).get('content', '')
+
+            # Some models (like DeepSeek R1) expose reasoning in a separate field
+            reasoning = data.get('message', {}).get('reasoning_content')
 
             return {
-                'content': message.get('content'),
-                'reasoning_details': message.get('reasoning_details')
+                'content': message_content,
+                'reasoning_details': reasoning
             }
 
     except Exception as e:
-        print(f"Error querying model {model}: {e}")
+        print(f"Error querying local model {model}: {e}")
         return None
 
 
@@ -58,10 +67,10 @@ async def query_models_parallel(
     messages: List[Dict[str, str]]
 ) -> Dict[str, Optional[Dict[str, Any]]]:
     """
-    Query multiple models in parallel.
+    Query multiple local models in parallel.
 
     Args:
-        models: List of OpenRouter model identifiers
+        models: List of Ollama model identifiers
         messages: List of message dicts to send to each model
 
     Returns:
