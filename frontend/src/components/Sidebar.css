@@ -55,6 +55,9 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .conversation-item:hover {
@@ -72,7 +75,25 @@
   margin-bottom: 4px;
 }
 
-.conversation-meta {
+.delete-btn {
+  background: none;
+  border: none;
   color: #999;
-  font-size: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0; /* Hidden by default */
+  transition: all 0.2s;
+  margin-left: 8px;
+}
+
+.delete-btn:hover {
+  color: #e74c3c;
+  background: #fdeaea;
+}
+
+/* Show delete button on hover of the item */
+.conversation-item:hover .delete-btn {
+  opacity: 1;
 }

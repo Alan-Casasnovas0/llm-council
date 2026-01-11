@@ -2,6 +2,19 @@ import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './Stage2.css';
 
+const getModelColor = (modelName) => {
+  if (!modelName || typeof modelName !== 'string') {
+    return 'var(--text-primary)';
+  }
+  const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+  let hash = 0;
+  for (let i = 0; i < modelName.length; i++) {
+    hash = modelName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
+
 function deAnonymizeText(text, labelToModel) {
   if (!labelToModel) return text;
 
@@ -21,6 +34,9 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
     return null;
   }
 
+  const activeRanking = rankings[activeTab];
+  const activeColor = getModelColor(activeRanking.model);
+
   return (
     <div className="stage stage2">
       <h3 className="stage-title">Stage 2: Peer Rankings</h3>
@@ -37,6 +53,10 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
             key={index}
             className={`tab ${activeTab === index ? 'active' : ''}`}
             onClick={() => setActiveTab(index)}
+            style={{
+              borderBottom: activeTab === index ? `3px solid ${activeColor}` : '1px solid var(--border-color)',
+              color: activeTab === index ? activeColor : 'var(--text-secondary)',
+            }}
           >
             {rank.model.split('/')[1] || rank.model}
           </button>
@@ -44,21 +64,28 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
       </div>
 
       <div className="tab-content">
-        <div className="ranking-model">
-          {rankings[activeTab].model}
+        <div className="ranking-header">
+          <div className="ranking-model" style={{ color: activeColor }}>
+            {activeRanking.model || 'Unknown Model'}
+          </div>
+          {activeRanking.duration && (
+              <div className="model-latency">
+                {activeRanking.duration}s
+              </div>
+            )}
         </div>
         <div className="ranking-content markdown-content">
           <ReactMarkdown>
-            {deAnonymizeText(rankings[activeTab].ranking, labelToModel)}
+            {deAnonymizeText(activeRanking.ranking, labelToModel)}
           </ReactMarkdown>
         </div>
 
-        {rankings[activeTab].parsed_ranking &&
-         rankings[activeTab].parsed_ranking.length > 0 && (
+        {activeRanking.parsed_ranking &&
+         activeRanking.parsed_ranking.length > 0 && (
           <div className="parsed-ranking">
             <strong>Extracted Ranking:</strong>
             <ol>
-              {rankings[activeTab].parsed_ranking.map((label, i) => (
+              {activeRanking.parsed_ranking.map((label, i) => (
                 <li key={i}>
                   {labelToModel && labelToModel[label]
                     ? labelToModel[label].split('/')[1] || labelToModel[label]
