@@ -3,7 +3,7 @@
 import httpx
 from typing import List, Dict, Any, Optional
 from .config import OLLAMA_BASE_URL
-
+import time
 
 async def query_model(
     model: str,
@@ -36,6 +36,8 @@ async def query_model(
     }
 
     try:
+        # Start timer
+        start_time = time.time()
         # Note: No API Key header needed for local Ollama
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
@@ -44,6 +46,9 @@ async def query_model(
             )
             response.raise_for_status()
 
+            # End timer
+            duration = time.time() - start_time
+            
             data = response.json()
             
             # Ollama returns the message in data['message']
@@ -54,7 +59,8 @@ async def query_model(
 
             return {
                 'content': message_content,
-                'reasoning_details': reasoning
+                'reasoning_details': reasoning,
+                'duration': round(duration, 2) # in seconds
             }
 
     except Exception as e:

@@ -26,7 +26,8 @@ async def stage1_collect_responses(user_query: str) -> List[Dict[str, Any]]:
         if response is not None:  # Only include successful responses
             stage1_results.append({
                 "model": model,
-                "response": response.get('content', '')
+                "response": response.get('content', ''),
+                "duration": response.get('duration')
             })
 
     return stage1_results
@@ -97,7 +98,8 @@ Now provide your evaluation and ranking:"""
             stage2_results.append({
                 "model": model,
                 "ranking": full_text,
-                "parsed_ranking": parsed
+                "parsed_ranking": parsed,
+                "duration": response.get('duration')
             })
 
     return stage2_results, label_to_model
@@ -161,7 +163,8 @@ Provide a clear, well-reasoned final answer that represents the council's collec
 
     return {
         "model": CHAIRMAN_MODEL,
-        "response": response.get('content', '')
+        "response": response.get('content', ''),
+        "duration": response.get('duration')
     }
 
 
@@ -188,15 +191,23 @@ def parse_ranking_from_text(ranking_text: str) -> List[str]:
             numbered_matches = re.findall(r'\d+\.\s*Response [A-Z]', ranking_section)
             if numbered_matches:
                 # Extract just the "Response X" part
-                return [re.search(r'Response [A-Z]', m).group() for m in numbered_matches]
+                matches = [re.search(r'Response [A-Z]', m).group() for m in numbered_matches]
+            else:
+                # Fallback: Extract all "Response X" patterns in order
+                matches = re.findall(r'Response [A-Z]', ranking_section)
+    else:
+        # Fallback: try to find any "Response X" patterns in order
+        matches = re.findall(r'Response [A-Z]', ranking_text)
 
-            # Fallback: Extract all "Response X" patterns in order
-            matches = re.findall(r'Response [A-Z]', ranking_section)
-            return matches
-
-    # Fallback: try to find any "Response X" patterns in order
-    matches = re.findall(r'Response [A-Z]', ranking_text)
-    return matches
+    # Remove potential duplicates while preserving order
+    unique_rankings = []
+    seen = set()
+    for rank in matches:
+        if rank not in seen:
+            seen.add(rank)
+            unique_rankings.append(rank)
+    
+    return unique_rankings
 
 
 def calculate_aggregate_rankings(
@@ -266,7 +277,7 @@ Title:"""
     messages = [{"role": "user", "content": title_prompt}]
 
     # Use llama3.2:1b for title generation (fast model)
-    response = await query_model("llama3.2:1b", messages, timeout=30.0)
+    response = await query_model("llama3.2:1b", messages, timeout=60.0)
 
     if response is None:
         # Fallback to a generic title
