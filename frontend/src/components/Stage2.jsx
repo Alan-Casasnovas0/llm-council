@@ -85,13 +85,18 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
           <div className="parsed-ranking">
             <strong>Extracted Ranking:</strong>
             <ol>
-              {activeRanking.parsed_ranking.map((label, i) => (
-                <li key={i}>
-                  {labelToModel && labelToModel[label]
-                    ? labelToModel[label].split('/')[1] || labelToModel[label]
-                    : label}
-                </li>
-              ))}
+                {activeRanking.parsed_ranking.map((label, i) => {
+                const modelName = labelToModel && labelToModel[label]
+                  ? labelToModel[label].split('/')[1] || labelToModel[label]
+                  : label;
+                const itemColor = labelToModel ? getModelColor(labelToModel[label] || label) : 'var(--text-primary)';
+                
+                return (
+                  <li key={i} style={{ color: itemColor, fontWeight: 500 }}>
+                    {modelName}
+                  </li>
+                );
+              })}
             </ol>
           </div>
         )}
@@ -104,20 +109,23 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
             Combined results across all peer evaluations (lower score is better):
           </p>
           <div className="aggregate-list">
-            {aggregateRankings.map((agg, index) => (
-              <div key={index} className="aggregate-item">
-                <span className="rank-position">#{index + 1}</span>
-                <span className="rank-model">
-                  {agg.model.split('/')[1] || agg.model}
-                </span>
-                <span className="rank-score">
-                  Avg: {agg.average_rank.toFixed(2)}
-                </span>
-                <span className="rank-count">
-                  ({agg.rankings_count} votes)
-                </span>
-              </div>
-            ))}
+            {aggregateRankings.map((agg, index) => {
+              const aggColor = getModelColor(agg.model);
+              return (
+                <div key={index} className="aggregate-item">
+                  <span className="rank-position" style={{ color: aggColor }}>#{index + 1}</span>
+                  <span className="rank-model" style={{ color: aggColor }}>
+                    {agg.model.split('/')[1] || agg.model}
+                  </span>
+                  <span className="rank-score">
+                    Avg: {agg.average_rank.toFixed(2)}
+                  </span>
+                  <span className="rank-count">
+                    ({agg.rankings_count} votes)
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
