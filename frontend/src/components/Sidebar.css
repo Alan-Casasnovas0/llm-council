@@ -1,28 +1,54 @@
 .sidebar {
   width: 260px;
-  background: #f8f8f8;
-  border-right: 1px solid #e0e0e0;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 100vh;
+  transition: background 0.3s, border 0.3s;
 }
 
 .sidebar-header {
   padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .sidebar-header h1 {
   font-size: 18px;
   margin: 0 0 12px 0;
-  color: #333;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 36px;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-tertiary);
 }
 
 .new-conversation-btn {
-  width: 100%;
+  flex: 1;
   padding: 10px;
-  background: #4a90e2;
-  border: 1px solid #4a90e2;
+  background: var(--accent-color);
+  border: 1px solid var(--accent-color);
   border-radius: 6px;
   color: #fff;
   cursor: pointer;
@@ -32,8 +58,8 @@
 }
 
 .new-conversation-btn:hover {
-  background: #357abd;
-  border-color: #357abd;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .conversation-list {
@@ -45,7 +71,7 @@
 .no-conversations {
   padding: 16px;
   text-align: center;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -61,39 +87,41 @@
 }
 
 .conversation-item:hover {
-  background: #f0f0f0;
+  background: var(--bg-tertiary);
 }
 
 .conversation-item.active {
-  background: #e8f0fe;
-  border: 1px solid #4a90e2;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-color);
 }
 
 .conversation-title {
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .delete-btn {
   background: none;
   border: none;
-  color: #999;
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 16px;
   padding: 4px 8px;
   border-radius: 4px;
-  opacity: 0; /* Hidden by default */
+  opacity: 0;
   transition: all 0.2s;
   margin-left: 8px;
 }
 
 .delete-btn:hover {
   color: #e74c3c;
-  background: #fdeaea;
+  background: rgba(231, 76, 60, 0.1);
 }
 
-/* Show delete button on hover of the item */
 .conversation-item:hover .delete-btn {
   opacity: 1;
 }

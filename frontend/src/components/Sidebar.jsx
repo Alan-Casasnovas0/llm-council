@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTheme } from '../ThemeContext';
 import './Sidebar.css';
 
 export default function Sidebar({
@@ -8,13 +9,24 @@ export default function Sidebar({
   onNewConversation,
   onDeleteConversation,
 }) {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="sidebar">
       <div className="sidebar-header">
         <h1>LLM Council</h1>
-        <button className="new-conversation-btn" onClick={onNewConversation}>
-          + New Conversation
-        </button>
+        <div className="header-actions">
+          <button 
+            className="theme-toggle" 
+            onClick={toggleTheme}
+            title="Toggle Dark/Light Mode"
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <button className="new-conversation-btn" onClick={onNewConversation}>
+            + New Conversation
+          </button>
+        </div>
       </div>
 
       <div className="conversation-list">
